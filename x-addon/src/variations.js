@@ -1,4 +1,3 @@
-
 let prefSvc = require("sdk/preferences/service");
 let prefs = require("sdk/simple-prefs").prefs;
 
@@ -22,17 +21,16 @@ function isEligible () {
 
 function cleanup () {
   prefSvc.reset(PAINTPREF);
+
   // should also clean all simple prefs
 }
 
 
+// useful for testing
 function makeIneligible () {
   let prefSvc = require("sdk/preferences/service");
   prefSvc.set("Nglayout.initialpaint.delay",1)
 }
-
-
-  //makeIneligible();
 
 
 module.exports = {

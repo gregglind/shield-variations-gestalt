@@ -1,3 +1,7 @@
+/*
+  Logic and functions for 'being an experiment with branches'.
+*/
+
 const {Ci, Cu} = require("chrome");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm");
 const { Services } = Cu.import("resource://gre/modules/Services.jsm");
@@ -6,7 +10,7 @@ let { merge } = require("sdk/util/object");
 let prefs = require("sdk/simple-prefs").prefs;
 let prefSvc = require("sdk/preferences/service");
 
-let id = require('sdk/self').id
+let id = require('sdk/self').id;
 
 function inTrial () {
   return prefSvc.get("shield.currentTrial")
@@ -22,8 +26,6 @@ function idUser () {
 }
 
 function report(data) {
-  // {branch:"some branch", "experiment": "something"}
-
   // extend it.
   data.firstrun = prefs.firstrun;
   data.who = idUser()
@@ -63,12 +65,11 @@ function xsetup (xconfig) {
   }
 }
 
-function die () {
-  require("sdk/addon/installer").uninstall(id)
+function die (addonId=id) {
+  require("sdk/addon/installer").uninstall(addonId);
 };
 
-
-// TODO: GRL vulnerable to clock time
+// TODO: GRL vulnerable to clock time issues
 function expired (xconfig, now = Date.now() ) {
   const days=86400*1000;
   return (now - xconfig.firstrun) > xconfig.duration
@@ -79,7 +80,6 @@ function survey(xconfig) {
 }
 
 function fakeTelemetry () {
-  let prefSvc = require("sdk/preferences/service");
   prefSvc.set("toolkit.telemetry.server","http://localhost:5000")
 }
 
@@ -124,7 +124,6 @@ function handleStartup (options, xconfig, variationsMod) {
     }
   }
 }
-
 
 function handleOnUnload (options, xconfig, variationsMod) {
   // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload

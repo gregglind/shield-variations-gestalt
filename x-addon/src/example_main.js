@@ -1,12 +1,7 @@
 // index.js
 
-let { merge } = require("sdk/util/object");
 const xutils = require("./experiment-utils")
 const variationsMod = require("./variations");
-  /* {
-    variations, object of functions to call the implement the variations.
-    cleanup: function that undoes all the variations.
-  }*/
 
 // configuration / setup constants.  These are only ones needed.
 const forSetup = {
@@ -16,9 +11,8 @@ const forSetup = {
   surveyUrl: "https://app.surveygizmo.com/login/v1"
 };
 
-
 function main (options, callback) {
-  xutils.fakeTelemetry();
+  //xutils.fakeTelemetry();
   var xconfig = xutils.xsetup(forSetup);  // call first.
   xutils.handleStartup(options, xconfig, variationsMod);
 }
