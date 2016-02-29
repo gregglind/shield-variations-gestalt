@@ -1,0 +1,22 @@
+{
+    "title": "x-addon-shield-trials-1",
+    "name": "x-addon-shield-trials-1",
+    "version": "0.0.13",
+    "description": "This totally keen feature rocks.",
+    "main": "src/example_main.js",
+    "author": "Gregg Lind <glind@mozilla.com>",
+    "engines": {
+        "firefox": ">=38.0a1",
+        "fennec": ">=38.0a1"
+    },
+    "license": "MIT",
+    "keywords": [
+        "jetpack"
+    ],
+    "scripts": {
+        "prebuild": "rm -f *xpi",
+        "nobuild": "jpm xpi; mv *xpi x-addon-shield.trials.xpi",
+        "build": "jpm sign --api-key user:6072276:720 --api-secret $(cat .api-secret);  mv *xpi x-addon-shield-trials.xpi",
+        "deploy": "scp -rp *xpi *html people.mozilla.com:~glind/wwwa/"
+    }
+}
