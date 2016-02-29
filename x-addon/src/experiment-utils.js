@@ -2,10 +2,19 @@ const {Ci, Cu} = require("chrome");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm");
 const { Services } = Cu.import("resource://gre/modules/Services.jsm");
 
+let { merge } = require("sdk/util/object");
 let prefs = require("sdk/simple-prefs").prefs;
 let prefSvc = require("sdk/preferences/service");
 
 let id = require('sdk/self').id
+
+function inTrial () {
+  return prefSvc.get("shield.currentTrial")
+}
+
+function leaveTrial () {
+  return prefSvc.reset("shield.currentTrial")
+}
 
 // this is just to demo that we can track packets.
 function idUser () {
@@ -74,6 +83,72 @@ function fakeTelemetry () {
   prefSvc.set("toolkit.telemetry.server","http://localhost:5000")
 }
 
+function handleStartup (options, xconfig, variationsMod) {
+  // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
+  switch (options.loadReason) {
+    case "install":
+      // 1a. check eligibility, or kill the addon.
+      if (!variationsMod.isEligible()) {
+        report(merge({},xconfig,{msg:"ineligible"}));
+        variationsMod.cleanup();
+        return die();
+      }
+      // TODO GRL something to see if it's in another trial.
+
+      // 1b. report install.
+      report(merge({},xconfig,{msg:options.loadReason}));
+
+      // fall through! to startup.
+    case "enable":
+    case "startup":
+      // 2a. startup -- do the effect.  should be able to be called multiple safely.
+      var variation = xconfig.variation
+      variationsMod.variations[variation]();  // do the effect
+      console.log("did the variation:", variation);
+      // 2b. report success
+      report(merge({},xconfig,{msg:options.loadReason}));
+      break;
+
+    // if needed, do these
+    case "upgrade":
+    case "downgrade":
+      break;
+
+    // 3a.  check expiration, and die with report if needed
+    if (expired(xconfig)) {
+        report(merge({},xconfig,{msg:"expired"}));
+        // 3b. survey for end of study
+        survey(xconfig)
+        variationsMod.cleanup();
+        die();
+    }
+  }
+}
+
+
+function handleOnUnload (options, xconfig, variationsMod) {
+  // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
+  switch (options.loadReason) {
+    case "uninstall":
+    case "disable":
+      // 4. user disable or uninstall.
+      report(merge({}, xconfig, {msg:"uninstall"}));
+      variationsMod.cleanup();
+
+      die();
+      break;
+
+      // 5. usual end of session.
+    case "shutdown":
+      report(merge({}, xconfig, {msg:"shutdown"}));
+      break;
+
+    case "upgrade":
+    case "downgrade":
+      break;
+  }
+}
+
 module.exports = {
   report: report,
   chooseVariation: chooseVariation,
@@ -81,5 +156,7 @@ module.exports = {
   die: die,
   expired: expired,
   survey: survey,
-  fakeTelemetry: fakeTelemetry
+  fakeTelemetry: fakeTelemetry,
+  handleStartup: handleStartup,
+  handleOnUnload: handleOnUnload
 }
