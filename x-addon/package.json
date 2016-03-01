@@ -1,9 +1,9 @@
 {
     "title": "x-addon-shield-trials-1",
     "name": "x-addon-shield-trials-1",
-    "version": "0.0.14",
-    "description": "This totally keen feature rocks.",
-    "main": "src/example_main.js",
+    "version": "0.0.16",
+    "description": "Screen Draw Performance Enhancements.",
+    "main": "src/index.js",
     "author": "Gregg Lind <glind@mozilla.com>",
     "engines": {
         "firefox": ">=38.0a1",

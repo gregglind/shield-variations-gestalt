@@ -13,7 +13,6 @@ const variations = {
   'control':  () => {}  // 230
 }
 
-
 function isEligible () {
   //boolean : Returns whether or not the application preference name both exists and has been set to a non-default value by the user (or a program acting on the user's behalf).
   return !prefSvc.isSet(PAINTPREF);  // exist
@@ -21,15 +20,18 @@ function isEligible () {
 
 function cleanup () {
   prefSvc.reset(PAINTPREF);
-
   // should also clean all simple prefs
 }
 
 
 // useful for testing
 function makeIneligible () {
-  let prefSvc = require("sdk/preferences/service");
-  prefSvc.set("Nglayout.initialpaint.delay",1)
+  prefSvc.set("Nglayout.initialpaint.delay",1);
+}
+
+function makeEligible () {
+  prefSvc.reset("Nglayout.initialpaint.delay");
+
 }
 
 
@@ -37,5 +39,6 @@ module.exports = {
   isEligible: isEligible,
   cleanup: cleanup,
   variations: variations,
-  makeIneligible: makeIneligible
+  makeIneligible: makeIneligible,
+  makeEligible: makeEligible
 }
