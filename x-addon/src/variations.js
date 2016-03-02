@@ -1,11 +1,11 @@
 let prefSvc = require("sdk/preferences/service");
 let prefs = require("sdk/simple-prefs").prefs;
 
-const PAINTPREF = 'Nglayout.initialpaint.delay';
+const PAINTPREF = 'nglayout.initialpaint.delay';
 
 const variations = {
   'agressive':  function () {
-    prefSvc.set(PAINTPREF,50);
+    prefSvc.set(PAINTPREF,5);
   },
   'medium':  function () {
     prefSvc.set(PAINTPREF,100);
@@ -26,12 +26,11 @@ function cleanup () {
 
 // useful for testing
 function makeIneligible () {
-  prefSvc.set("Nglayout.initialpaint.delay",1);
+  prefSvc.set(PAINTPREF,1);
 }
 
 function makeEligible () {
-  prefSvc.reset("Nglayout.initialpaint.delay");
-
+  prefSvc.reset(PAINTPREF);
 }
 
 

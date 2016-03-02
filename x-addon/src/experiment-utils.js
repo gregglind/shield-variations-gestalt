@@ -179,6 +179,11 @@ function handleOnUnload (reason, xconfig, variationsMod) {
   }
 }
 
+function resetPrefs () {
+  delete prefs.firstrun;
+  delete prefs.variation;
+}
+
 module.exports = {
   report: report,
   chooseVariation: chooseVariation,
@@ -188,5 +193,6 @@ module.exports = {
   survey: survey,
   fakeTelemetry: fakeTelemetry,
   handleStartup: handleStartup,
-  handleOnUnload: handleOnUnload
+  handleOnUnload: handleOnUnload,
+  resetPrefs: resetPrefs
 }
