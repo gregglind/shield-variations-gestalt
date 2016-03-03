@@ -1,0 +1,24 @@
+{
+  "title": "Driver for Shield-Variation Tests.",
+  "name": "driver-addon",
+  "version": "0.0.1",
+  "description": "A basic add-on",
+  "main": "index.js",
+  "author": "Gregg Lind <glind@mozilla.com>",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ],
+  "scripts": {
+    "test":  "jpm test",
+    "serve": "serve -p 3555 ."
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "serve": "^1.4.0"
+  }
+}
