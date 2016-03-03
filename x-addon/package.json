@@ -1,8 +1,8 @@
 {
   "title": "x-screen-draw-performance-variations-1",
   "name": "x-screen-draw-performance-variations-1",
-  "version": "0.0.18",
-  "description": "Screen Draw Performance Enhancements.",
+  "version": "0.0.19",
+  "description": "Mozilla Screen Draw Performance Enhancements.",
   "main": "src/index.js",
   "author": "Gregg Lind <glind@mozilla.com>",
   "engines": {

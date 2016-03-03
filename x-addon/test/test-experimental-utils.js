@@ -5,8 +5,7 @@ let prefs = require("sdk/simple-prefs").prefs;
 
 var xutils = require("../src/experiment-utils");
 
-
-// for these tests
+// A Fake Experiment for these tests
 const FAKEPREF = "fake.variations.pref";
 var variationsMod = {
   cleanup:  () => {
@@ -26,10 +25,7 @@ const forSetup = {
   surveyUrl: "some url"
 };
 
-
-
 xutils.fakeTelemetry();  // for this whole module
-
 
 exports['test right keys'] = function (assert) {
   let expected = [

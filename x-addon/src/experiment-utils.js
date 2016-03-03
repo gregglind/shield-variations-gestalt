@@ -21,16 +21,16 @@ function leaveTrial () {
   return prefSvc.reset("shield.currentTrial")
 }
 
-// this is just to demo that we can track packets.
-function idUser () {
-  return Services.downloads.userDownloadsDirectory.path
+function userId () {
+  return prefSvc.get("toolkit.telemetry.cachedClientID", "unknown")
 }
 
 function report(data) {
-  // extend it.
-  data.firstrun = prefs.firstrun;
-  data.who = idUser()
-  data.version = self.version;
+  data = merge({}, data ,{
+    firstrun: prefs.firstrun,
+    who: userId(),
+    version: self.version
+  });
   console.log("about to ping", data);
   let telOptions = {addClientId: true, addEnvironment: true}
   return TelemetryController.submitExternalPing("x-shield-trials", data, telOptions);
@@ -86,17 +86,25 @@ function die (addonId=self.id) {
 // TODO: GRL vulnerable to clock time issues
 function expired (xconfig, now = Date.now() ) {
   const days=86400*1000;
-  console.log("expired?", now, Number(xconfig.firstrun), xconfig.duration)
   return ((now - Number(xconfig.firstrun))/ days) > xconfig.duration;
 }
 
 // open a survey.
-function survey(xconfig, extraQueryArgs) {
+function survey(xconfig, extraQueryArgs={}) {
   let url = xconfig.surveyUrl;
+  extraQueryArgs = merge({},
+    extraQueryArgs,
+    {
+      variation: xconfig.variation,
+      xname: xconfig.name,
+      who: userId()
+    }
+  );
   if (extraQueryArgs) {
     url += "?" + querystring.stringify(extraQueryArgs);
   }
-  console.log(url)
+
+  console.log(url);
   require("sdk/tabs").open(url);
 }
 
@@ -106,6 +114,7 @@ function fakeTelemetry () {
 }
 
 // do all EXPERIMENT LOGIC during addon startup
+let _eligible = true; // handle #20
 function handleStartup (options, xconfig, variationsMod) {
   /*
     options: the bootstrap.js options.  `loadReason`
@@ -118,13 +127,15 @@ function handleStartup (options, xconfig, variationsMod) {
   */
 
   // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
+  console.log(options.loadReason);
   switch (options.loadReason) {
     case "install":
       // 1a. check eligibility, or kill the addon.
       if (!variationsMod.isEligible()) {
         report(merge({},xconfig,{msg:"ineligible"}));
-        variationsMod.cleanup();
-        return die();
+        resetPrefs();
+        _eligible = false;
+        return die();  // gross, calls survey, don't want to!
       }
       // TODO GRL something to see if it's in another trial.
 
@@ -151,20 +162,25 @@ function handleStartup (options, xconfig, variationsMod) {
       // 3b. survey for end of study
       survey(xconfig, {'reason': 'end-of-study'});
       variationsMod.cleanup();
+      resetPrefs();
       die();
   }
 }
 
+
 function handleOnUnload (reason, xconfig, variationsMod) {
   // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
-  console.log(reason);
+  console.log('unload', reason);
   switch (reason) {
     case "uninstall":
     case "disable":
       // 4. user disable or uninstall.
       report(merge({}, xconfig, {msg:"user-ended-study"}));
-      survey(xconfig, {'reason': 'user-ended-study'});
-      variationsMod.cleanup();
+      if (_eligible) {  // dont survey or cleanup if user wasn't eligible
+        survey(xconfig, {'reason': 'user-ended-study'});
+        variationsMod.cleanup();
+      }
+      resetPrefs();
       die();
       break;
 
