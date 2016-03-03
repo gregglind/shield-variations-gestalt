@@ -74,7 +74,6 @@ OR:
 
 1.  reset `nglayout.initialpaint.delay
 2.  create `extensions.@x-screen-draw-performance-variations-1.variation` as 'medium'
-3.  restart firefox
 
 ### Expect
 
@@ -106,7 +105,7 @@ OR:
 
 1.  Close survey tab.
 
-## Test 4: 'user-disable'
+## Test 5: 'user-disable'
 
 ### Prep:
 
