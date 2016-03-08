@@ -114,7 +114,7 @@ function fakeTelemetry () {
 }
 
 // do all EXPERIMENT LOGIC during addon startup
-let _eligible = true; // handle #20
+let _userDisabled = true; // handle #20
 function handleStartup (options, xconfig, variationsMod) {
   /*
     options: the bootstrap.js options.  `loadReason`
@@ -133,7 +133,7 @@ function handleStartup (options, xconfig, variationsMod) {
       if (!variationsMod.isEligible()) {
         report(merge({},xconfig,{msg:"ineligible"}));
         resetPrefs();
-        _eligible = false;
+        _userDisabled = false;
         return die();  // gross, calls survey, don't want to!
       }
       // TODO GRL something to see if it's in another trial. #3
@@ -142,7 +142,7 @@ function handleStartup (options, xconfig, variationsMod) {
         if (curtrial && curtrial != xconfig.name) {
           report(merge({},xconfig,{msg:"in-other-trial"}));
           resetPrefs();
-          _eligible = false;
+          _userDisabled = false;
         return die();  // gross, calls survey, don't want to!
       }
       trialManager.join(xconfig.name);
@@ -170,6 +170,7 @@ function handleStartup (options, xconfig, variationsMod) {
 
   // 3a.  check expiration, and die with report if needed
   if (expired(xconfig)) {
+      _userDisabled = false;
       report(merge({},xconfig,{msg:"end-of-study"}));
       // 3b. survey for end of study
       survey(xconfig, {'reason': 'end-of-study'});
@@ -188,7 +189,7 @@ function handleOnUnload (reason, xconfig, variationsMod) {
     case "disable":
       // 4. user disable or uninstall.
       report(merge({}, xconfig, {msg:"user-ended-study"}));
-      if (_eligible) {  // dont survey or cleanup if user wasn't eligible
+      if (_userDisabled) {  // dont survey or cleanup if user wasn't eligible
         survey(xconfig, {'reason': 'user-ended-study'});
         variationsMod.cleanup();
       }
