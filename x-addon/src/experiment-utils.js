@@ -13,22 +13,21 @@ let querystring = require("sdk/querystring");
 
 let self = require('sdk/self');
 
-function inTrial () {
-  return prefSvc.get("shield.currentTrial")
-}
+const TRIALPREF = "shield.currentTrial";
 
-function leaveTrial () {
-  return prefSvc.reset("shield.currentTrial")
-}
+const trialManager = {
+  current:  () => prefSvc.get(TRIALPREF),
+  leave:  () => prefSvc.reset(TRIALPREF),
+  join: (name) => prefSvc.set(TRIALPREF, name)
+};
 
 function userId () {
-  return prefSvc.get("toolkit.telemetry.cachedClientID", "unknown")
+  return prefSvc.get("toolkit.telemetry.cachedClientID","unknown");
 }
 
 function report(data) {
   data = merge({}, data ,{
     firstrun: prefs.firstrun,
-    who: userId(),
     version: self.version
   });
   console.log("about to ping", data);
@@ -75,7 +74,8 @@ function xsetup (xSetupConfig) {
     firstrun: prefs.firstrun,
     name: xSetupConfig.name,
     surveyUrl: xSetupConfig.surveyUrl,
-    duration: xSetupConfig.duration
+    duration: xSetupConfig.duration,
+    who:  userId()
   }
 }
 
@@ -83,7 +83,7 @@ function die (addonId=self.id) {
   require("sdk/addon/installer").uninstall(addonId);
 };
 
-// TODO: GRL vulnerable to clock time issues
+// TODO: GRL vulnerable to clock time issues #1
 function expired (xconfig, now = Date.now() ) {
   const days=86400*1000;
   return ((now - Number(xconfig.firstrun))/ days) > xconfig.duration;
@@ -97,7 +97,7 @@ function survey(xconfig, extraQueryArgs={}) {
     {
       variation: xconfig.variation,
       xname: xconfig.name,
-      who: userId()
+      who: xconfig.who
     }
   );
   if (extraQueryArgs) {
@@ -127,7 +127,6 @@ function handleStartup (options, xconfig, variationsMod) {
   */
 
   // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
-  console.log(options.loadReason);
   switch (options.loadReason) {
     case "install":
       // 1a. check eligibility, or kill the addon.
@@ -137,7 +136,20 @@ function handleStartup (options, xconfig, variationsMod) {
         _eligible = false;
         return die();  // gross, calls survey, don't want to!
       }
-      // TODO GRL something to see if it's in another trial.
+      // TODO GRL something to see if it's in another trial. #3
+      /*
+        let curtrial = trialManager.current();
+        if (curtrial && curtrial != xconfig.name) {
+          report(merge({},xconfig,{msg:"in-other-trial"}));
+          resetPrefs();
+          _eligible = false;
+        return die();  // gross, calls survey, don't want to!
+      }
+      trialManager.join(xconfig.name);
+
+      ## needs code to 'leave' trial at all places.
+      ## needs test code
+      */
 
       // 1b. report install.
       report(merge({},xconfig,{msg:options.loadReason}));
@@ -210,5 +222,6 @@ module.exports = {
   fakeTelemetry: fakeTelemetry,
   handleStartup: handleStartup,
   handleOnUnload: handleOnUnload,
-  resetPrefs: resetPrefs
+  resetPrefs: resetPrefs,
+  trialManager: trialManager
 }

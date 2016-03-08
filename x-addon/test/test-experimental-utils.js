@@ -38,7 +38,8 @@ exports['test right keys'] = function (assert) {
     ["fakeTelemetry", "function"],
     ["handleStartup", "function"],
     ["handleOnUnload", "function"],
-    ["resetPrefs", "function"]
+    ["resetPrefs", "function"],
+    ["trialManager", "object"]
   ];
   let keys = expected.map((x)=>x[0]);
   expect(xutils).to.have.all.keys(keys);
@@ -63,7 +64,7 @@ exports['test xsetup'] = function (assert) {
   //}
 
   function checkXconfig(xconfig) {
-    let keys = ['variation', 'firstrun', 'name', 'surveyUrl', 'duration'];
+    let keys = ['variation', 'firstrun', 'name', 'surveyUrl', 'duration', 'who'];
     expect(xconfig).to.have.keys(keys);
 
     expect(Number(prefs.firstrun)).to.be.an("number");
