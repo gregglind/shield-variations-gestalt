@@ -10,6 +10,9 @@ const variations = {
   'medium':  function () {
     prefSvc.set(PAINTPREF,50);
   },
+  'weak':  function () {
+    prefSvc.set(PAINTPREF,1000);
+  },
   'ut':  () => {}  // 230  // ut:: usual treatment
 }
 
