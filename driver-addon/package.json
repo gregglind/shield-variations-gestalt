@@ -14,8 +14,9 @@
     "jetpack"
   ],
   "scripts": {
+    "pretest": "bash pretest.sh && npm run serve",
     "test":  "jpm test",
-    "serve": "serve -p 3555 ."
+    "serve": "curl -s -I localhost:3555 &> /dev/null || serve -p 3555 ."
   },
   "devDependencies": {
     "chai": "^3.5.0",

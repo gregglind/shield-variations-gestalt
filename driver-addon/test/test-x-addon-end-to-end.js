@@ -8,7 +8,6 @@ let installer = require("sdk/addon/installer");
 let self = require('sdk/self');
 const { setTimeout } = require("sdk/timers");
 
-
 let testUtils = require("./utils");
 
 console.log(self, self.data);
@@ -100,6 +99,7 @@ exports['test 1: install, normal install'] = function (assert, done) {
       // tests.
       expect(getAddonPref("firstrun"), "firstrun is number").to.be.a.number;
       expect(getAddonPref("variation"), "variation valid").to.be.oneOf(['ut','aggressive','medium']);
+      expect(tabs.length, "one tab open").to.equal(1);
       // cleanup
       cleanup().then(done);
     },
@@ -114,7 +114,6 @@ exports['test 1: install, normal install'] = function (assert, done) {
 
 exports['test 2: install addon, but ineligible.'] = function (assert, done) {
   reset();
-
 
   // ### Prep:
   //
@@ -139,6 +138,7 @@ exports['test 2: install addon, but ineligible.'] = function (assert, done) {
       expect(hasTabWithUrlLike(/qsurvey/),"no survey").to.be.false;
       // 5.  `nglayout.initialpaint.delay` still 13
       expect(prefSvc.get(PAINTPREF),"PAINTPREF not affected by uninstall").to.equal(13);
+      expect(tabs.length, "one tab open").to.equal(1);
     }
   ).then(reset).then(done);
 }
@@ -159,6 +159,8 @@ exports['test 3: Setup a particular arm, startup'] = function (assert, done) {
     () => {
       // 1.  pref `nglayout.initialpaint.delay` will be `50`
       expect(prefSvc.get(PAINTPREF), "pref is now 50").to.equal(50);
+      expect(tabs.length, "one tab open").to.equal(1);
+
   }).
   then(reset).then(done);
 }
@@ -200,6 +202,8 @@ exports['test 4: end-of-study'] = function (assert, done) {
       expect(addonThere).to.be.false;
       // 3.  open a survey with `reason=user-ended-study` in the url
       expect(hasTabWithUrlLike(/reason=end-of-study/),"has surveyUrl, user-ended-study").to.be.true;
+      expect(tabs.length, "2 tabs open").to.equal(2);
+
       // 4.  all `@x-screen` prefs will be cleared
       expect(getAddonPref("firstrun"), "firstrun should be undef").to.be.undefined;
       expect(getAddonPref("variation"), "variation should be undef").to.be.undefined;
@@ -225,6 +229,8 @@ exports['test 5: user-disables addon'] = function (assert, done) {
       // 2.  then immediately `die` because it is too old.
       // 3.  Observer survey opened with `reason=end-of-study` in the url
       expect(hasTabWithUrlLike(/reason=user-ended-study/),"has surveyUrl, user-ended-study").to.be.true;
+      expect(tabs.length, "2 tabs open").to.equal(2);
+
       // 4.  all `@x-screen` prefs will be cleared.
       expect(getAddonPref("firstrun"), "firstrun should be undef").to.be.undefined;
       expect(getAddonPref("variation"), "variation should be undef").to.be.undefined;
