@@ -1,2 +1,6 @@
-shield-variations-demo-site
-*xpi
+.*
+*.md
+*.xpi
+!/src
+!/test
+
