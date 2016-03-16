@@ -1,8 +1,8 @@
 {
-  "title": "x-screen-draw-performance-variations-1",
-  "name": "x-screen-draw-performance-variations-1",
-  "version": "0.0.21",
-  "description": "Mozilla Screen Draw Performance Enhancements.",
+  "title": "x-screen-draw-performance-shield-study-1",
+  "name": "x-screen-draw-performance-shield-study-1",
+  "version": "0.0.22",
+  "description": "Mozilla Screen Draw Performance Enhancements Study.",
   "main": "src/index.js",
   "author": "Gregg Lind <glind@mozilla.com>",
   "engines": {
@@ -16,12 +16,12 @@
   "scripts": {
     "test": "jpm test",
     "prebuild": "rm -f *xpi",
-    "postbuild": "mv *xpi x-screen-draw-performance-variations-1.xpi",
+    "postbuild": "mv *xpi x-screen-draw-performance-shield-study-1.xpi",
     "build": "jpm sign --api-key user:6072276:720 --api-secret $(cat .api-secret)",
     "prelocal:build": "npm run prebuild",
     "postlocal:build": "npm run postbuild",
     "local:build":  "npm run prebuild; jpm xpi; ",
-    "deploy": "cp *xpi shield-variations-demo-site; scp -rp shield-variations-demo-site people.mozilla.com:~glind/wwwa/; echo 'http://people.mozilla.org/~glind/all/shield-variations-demo-site/'"
+    "deploy": "cp *xpi shield-studies-demo-site; scp -rp shield-studies-demo-site people.mozilla.com:~glind/wwwa/; echo 'http://people.mozilla.org/~glind/all/shield-variations-demo-site/'"
   },
   "devDependencies": {
     "chai": "^3.5.0"

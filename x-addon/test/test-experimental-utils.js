@@ -39,7 +39,7 @@ exports['test right keys'] = function (assert) {
     ["handleStartup", "function"],
     ["handleOnUnload", "function"],
     ["resetPrefs", "function"],
-    ["trialManager", "object"]
+    ["studyManager", "object"]
   ];
   let keys = expected.map((x)=>x[0]);
   expect(xutils).to.have.all.keys(keys);

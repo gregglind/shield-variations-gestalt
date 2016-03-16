@@ -13,12 +13,24 @@ let querystring = require("sdk/querystring");
 
 let self = require('sdk/self');
 
-const TRIALPREF = "shield.currentTrial";
 
-const trialManager = {
-  current:  () => prefSvc.get(TRIALPREF),
-  leave:  () => prefSvc.reset(TRIALPREF),
-  join: (name) => prefSvc.set(TRIALPREF, name)
+/*
+  Event target for things?
+
+  - die
+  - report
+  - survey?
+  - module level 'fake it', affects 'report, die'
+
+*/
+
+
+const STUDYPREF = "shield.currentSTUDY";
+
+const studyManager = {
+  current:  () => prefSvc.get(STUDYPREF),
+  leave:  () => prefSvc.reset(STUDYPREF),
+  join: (name) => prefSvc.set(STUDYPREF, name)
 };
 
 function userId () {
@@ -32,7 +44,7 @@ function report(data) {
   });
   console.log("about to ping", data);
   let telOptions = {addClientId: true, addEnvironment: true}
-  return TelemetryController.submitExternalPing("x-shield-trials", data, telOptions);
+  return TelemetryController.submitExternalPing("x-shield-studies", data, telOptions);
 }
 
 // equal probability choices from a list "choices"
@@ -138,14 +150,14 @@ function handleStartup (options, xconfig, variationsMod) {
       }
       // TODO GRL something to see if it's in another trial. #3
       /*
-        let curtrial = trialManager.current();
+        let curtrial = studyManager.current();
         if (curtrial && curtrial != xconfig.name) {
           report(merge({},xconfig,{msg:"in-other-trial"}));
           resetPrefs();
           _userDisabled = false;
         return die();  // gross, calls survey, don't want to!
       }
-      trialManager.join(xconfig.name);
+      studyManager.join(xconfig.name);
 
       ## needs code to 'leave' trial at all places.
       ## needs test code
@@ -224,5 +236,5 @@ module.exports = {
   handleStartup: handleStartup,
   handleOnUnload: handleOnUnload,
   resetPrefs: resetPrefs,
-  trialManager: trialManager
+  studyManager: studyManager
 }
