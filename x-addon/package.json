@@ -1,7 +1,7 @@
 {
   "title": "x-screen-draw-performance-shield-study-1",
   "name": "x-screen-draw-performance-shield-study-1",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Mozilla Screen Draw Performance Enhancements Study.",
   "main": "src/index.js",
   "author": "Gregg Lind <glind@mozilla.com>",
