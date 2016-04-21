@@ -38,8 +38,8 @@ exports['test variations are functions'] = function (assert) {
   }
 }
 
-exports['test there are 4 variations'] = function (assert) {
-  expect(Object.keys(variationsMod.variations).length).to.equal(4);
+exports['test there are 3 variations'] = function (assert) {
+  expect(Object.keys(variationsMod.variations).length).to.equal(3);
 }
 
 require("sdk/test").run(exports);

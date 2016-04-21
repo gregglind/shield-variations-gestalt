@@ -10,9 +10,10 @@ const forSetup = {
 };
 
 function main (options, callback) {
-  var xconfig = xutils.xsetup(forSetup);  // call first.
-  xutils.handleStartup(options, xconfig, variationsMod);
-
+  xutils.generateTelemetryIdIfNeeded().then(function () {
+    var xconfig = xutils.xsetup(forSetup);  // call first.
+    xutils.handleStartup(options, xconfig, variationsMod);
+  })
   // addon specific load code should go here, if there is additional.
 }
 

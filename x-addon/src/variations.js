@@ -10,10 +10,12 @@ const variations = {
   'medium':  function () {
     prefSvc.set(PAINTPREF,50);
   },
-  'weak':  function () {
-    prefSvc.set(PAINTPREF,1000);
-  },
-  'ut':  () => {}  // 230  // ut:: usual treatment
+  //'weak':  function () {
+  //  prefSvc.set(PAINTPREF,1000);
+  //},
+
+  // https://dxr.mozilla.org/mozilla-central/source/layout/base/nsPresShell.h#71
+  'ut':  () => {}  // 250  // ut:: usual treatment
 }
 
 function isEligible () {
