@@ -1,5 +1,4 @@
 .*
-*.md
-*.xpi
-!/src
-!/test
+*
+!/package.json
+!/src/**
