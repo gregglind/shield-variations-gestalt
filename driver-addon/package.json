@@ -14,7 +14,7 @@
     "jetpack"
   ],
   "scripts": {
-    "pretest": "bash pretest.sh && npm run serve",
+    "pretest": "bash pretest.sh",
     "test":  "jpm test",
     "serve": "curl -s -I localhost:3555 &> /dev/null || serve -p 3555 ."
   },

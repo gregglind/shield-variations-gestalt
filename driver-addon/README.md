@@ -3,18 +3,7 @@
 ## Use:
 
 ```
-# cd x-addon, build the addon.
-```
-
-```
-# 2.  here.
-npm install
-
-cp ../x-addon/*xpi .
-
-# serve at localhost:3555
-npm run serve &
-
+npm run serve
 npm run test
 ```
 

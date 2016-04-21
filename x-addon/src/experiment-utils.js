@@ -5,14 +5,20 @@
 const {Ci, Cu} = require("chrome");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm");
 const { Services } = Cu.import("resource://gre/modules/Services.jsm");
+const CID = Cu.import("resource://gre/modules/ClientID.jsm");
 
 let { merge } = require("sdk/util/object");
 let prefs = require("sdk/simple-prefs").prefs;
 let prefSvc = require("sdk/preferences/service");
 let querystring = require("sdk/querystring");
+const { setInterval } = require("sdk/timers");
 
 let self = require('sdk/self');
 
+const DAY = 86400*1000;
+
+// ongoing within-addon fuses / timers
+let lastDailyPing = Date.now();
 
 /*
   Event target for things?
@@ -32,6 +38,16 @@ const studyManager = {
   leave:  () => prefSvc.reset(STUDYPREF),
   join: (name) => prefSvc.set(STUDYPREF, name)
 };
+
+// works by side effect / async.  No guarantees
+function generateTelemetryIdIfNeeded() {
+  let id = TelemetryController.clientID;
+  if (id == undefined) {
+    return CID.ClientIDImpl._doLoadClientID()
+  } else {
+    return Promise.resolve(id)
+  }
+}
 
 function userId () {
   return prefSvc.get("toolkit.telemetry.cachedClientID","unknown");
@@ -97,19 +113,21 @@ function die (addonId=self.id) {
 
 // TODO: GRL vulnerable to clock time issues #1
 function expired (xconfig, now = Date.now() ) {
-  const days=86400*1000;
-  return ((now - Number(xconfig.firstrun))/ days) > xconfig.duration;
+  return ((now - Number(xconfig.firstrun))/ DAY) > xconfig.duration;
 }
 
 // open a survey.
 function survey(xconfig, extraQueryArgs={}) {
   let url = xconfig.surveyUrl;
+  // get user info.
   extraQueryArgs = merge({},
     extraQueryArgs,
     {
       variation: xconfig.variation,
       xname: xconfig.name,
-      who: xconfig.who
+      who: xconfig.who,
+      updateChannel: Services.appinfo.defaultUpdateChannel,
+      fxVersion: Services.appinfo.version,
     }
   );
   if (extraQueryArgs) {
@@ -123,6 +141,30 @@ function survey(xconfig, extraQueryArgs={}) {
 // useful for local dev
 function fakeTelemetry () {
   prefSvc.set("toolkit.telemetry.server","http://localhost:5000")
+}
+
+function dieIfExpired(xconfig, variationsMod) {
+  if (expired(xconfig)) {
+      _userDisabled = false;
+      report(merge({},xconfig,{msg:"end-of-study"}));
+      // 3b. survey for end of study
+      survey(xconfig, {'reason': 'end-of-study'});
+      variationsMod.cleanup();
+      resetPrefs();
+      die();
+  }
+}
+
+function timerFunction(xconfig, variationsMod) {
+  // check for new day, phone home if true.
+  let t = Date.now();
+  if ((t - lastDailyPing) >= DAY) {
+    lastDailyPing = t;
+    report(merge({}, xconfig, {msg:"running"}));
+  }
+
+  // check expiration, and die with report if needed
+  dieIfExpired(xconfig, variationsMod);
 }
 
 // do all EXPERIMENT LOGIC during addon startup
@@ -180,16 +222,11 @@ function handleStartup (options, xconfig, variationsMod) {
   // 2b. report success
   report(merge({}, xconfig, {msg:"running"}));
 
-  // 3a.  check expiration, and die with report if needed
-  if (expired(xconfig)) {
-      _userDisabled = false;
-      report(merge({},xconfig,{msg:"end-of-study"}));
-      // 3b. survey for end of study
-      survey(xconfig, {'reason': 'end-of-study'});
-      variationsMod.cleanup();
-      resetPrefs();
-      die();
-  }
+  // check once, right away.
+  dieIfExpired(xconfig, variationsMod);
+
+  // then every 5 minutes
+  let _pulseTimer = setInterval(timerFunction.bind(null, xconfig, variationsMod), 5*60*1000 /*5 minutes*/)
 }
 
 
@@ -236,5 +273,6 @@ module.exports = {
   handleStartup: handleStartup,
   handleOnUnload: handleOnUnload,
   resetPrefs: resetPrefs,
-  studyManager: studyManager
+  studyManager: studyManager,
+  generateTelemetryIdIfNeeded: generateTelemetryIdIfNeeded
 }

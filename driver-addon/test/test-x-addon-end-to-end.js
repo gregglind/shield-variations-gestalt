@@ -18,22 +18,23 @@ prefSvc.set("xpinstall.signatures.required",false);
 prefSvc.set("xpinstall.whitelist.required",false);
 
 // specific to this experiment... needs npm run serve
-const addonUrl = "http://localhost:3555/x-screen-draw-performance-variations-1.xpi";
+const addonUrl = "http://localhost:3555/x-screen-draw-performance-shield-study-1.xpi";
 
-const addonId = "@x-screen-draw-performance-variations-1";
+const addonId = "@x-screen-draw-performance-shield-study-1";
 const PAINTPREF = 'nglayout.initialpaint.delay';
 
 function getAddonPref (name) {
-  return prefSvc.get("extensions.@x-screen-draw-performance-variations-1." + name);
+  return prefSvc.get("extensions.@x-screen-draw-performance-shield-study-1." + name);
 }
 
 function setAddonPref (name, val) {
-  return prefSvc.set("extensions.@x-screen-draw-performance-variations-1." + name, val);
+  console.log("setting:", name, val);
+  return prefSvc.set("extensions.@x-screen-draw-performance-shield-study-1." + name, val);
 }
 
 function resetPrefs () {
   prefSvc.reset(PAINTPREF);
-  console.log('reset pref!');
+  console.log('reset pref!', PAINTPREF);
 }
 
 function installAddon() {
@@ -193,10 +194,11 @@ exports['test 4: end-of-study'] = function (assert, done) {
   setAddonPref("firstrun", 500);
 
   // 3.  install the addon
-  installAddon().then(waitABit).then(
+  installAddon().then(waitABit).then(waitABit).then(
   hasAddon).then(
     // Expect
     (addonThere) => {
+      console.log(`there: ${addonThere}`,getAddonPref("firstrun"),getAddonPref("variation"), prefSvc.get(PAINTPREF),hasTabWithUrlLike(/qsurvey/))
       // 1. addon will briefly install.
       // 2. addon will die (`about:addons` will no longer show it)
       expect(addonThere).to.be.false;
