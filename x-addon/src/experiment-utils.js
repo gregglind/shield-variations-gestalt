@@ -54,10 +54,10 @@ function userId () {
 }
 
 function report(data) {
-  data = merge({}, data ,{
+  data = merge({}, {
     firstrun: prefs.firstrun,
     version: self.version
-  });
+  }, data);
   console.log("about to ping", data);
   let telOptions = {addClientId: true, addEnvironment: true}
   return TelemetryController.submitExternalPing("x-shield-studies", data, telOptions);
@@ -168,7 +168,7 @@ function timerFunction(xconfig, variationsMod) {
 }
 
 // do all EXPERIMENT LOGIC during addon startup
-let _userDisabled = true; // handle #20
+let _userDisabled = true; // handle #20 #41
 function handleStartup (options, xconfig, variationsMod) {
   /*
     options: the bootstrap.js options.  `loadReason`
@@ -181,15 +181,18 @@ function handleStartup (options, xconfig, variationsMod) {
   */
 
   // https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Listening_for_load_and_unload
+  console.log('load', options.loadReason);
   switch (options.loadReason) {
     case "install":
       // 1a. check eligibility, or kill the addon.
       if (!variationsMod.isEligible()) {
+        //41 TODO, handle ineligible die.
+        // phone home ineligible
         report(merge({},xconfig,{msg:"ineligible"}));
         resetPrefs();
         _userDisabled = false;
-        return die();  // gross, calls survey, don't want to!
-      }
+        return die();
+      } else {
       // TODO GRL something to see if it's in another trial. #3
       /*
         let curtrial = studyManager.current();
@@ -206,8 +209,8 @@ function handleStartup (options, xconfig, variationsMod) {
       */
 
       // 1b. report install.
-      report(merge({},xconfig,{msg:options.loadReason}));
-
+        report(merge({},xconfig,{msg:options.loadReason}));
+      }
     case "enable":
     case "startup":
     case "upgrade":
@@ -237,8 +240,8 @@ function handleOnUnload (reason, xconfig, variationsMod) {
     case "uninstall":
     case "disable":
       // 4. user disable or uninstall.
-      report(merge({}, xconfig, {msg:"user-ended-study"}));
       if (_userDisabled) {  // dont survey or cleanup if user wasn't eligible
+        report(merge({}, xconfig, {msg:"user-ended-study"}));
         survey(xconfig, {'reason': 'user-ended-study'});
         variationsMod.cleanup();
       }
